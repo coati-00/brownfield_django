@@ -3,4 +3,12 @@ li
   list-style-type: none;
 }
 
+.error-msg, .form-error{
+	'color:red';
+}
 
+
+button{
+
+
+}

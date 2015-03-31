@@ -8,6 +8,10 @@
 {% endblock %}
 
 {% block js %}
+    <script type="text/template" id="error-message-template">
+      <b class="error-msg"><%= error_msg %></b>
+    </script>
+
     <script type="text/template" id="course-list-template">
         <div class="course-name-inside">
         <button class="btn btn-default course_name"><span class="glyphicon glyphicon-th-list"></span> <strong><%= name %></strong> Details</button>

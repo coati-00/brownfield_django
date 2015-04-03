@@ -7,7 +7,12 @@ var BaseItemView = Backbone.View.extend({
 
     tagName : 'li',
 
-	render: function () 
+    // initialize: function(options) {
+    //     _.bindAll(this, 'showErrorMessage');
+    //     this.error_template = _.template(jQuery("#error-message-template").html());
+    // },
+
+	  render: function () 
     {
         var html = this.template(this.model.toJSON());
         this.$el.html(html);
@@ -26,16 +31,32 @@ var BaseItemView = Backbone.View.extend({
         this.$el.html(edit_form);
     },
 
-    is_empty: function (selector_string, error_element, error_msg)
+    showErrorMessage: function(selector_string, error_element, error_class, error_msg)
+    {           
+        var error_class = error_class.substr(1);
+        var this_error_elem = this.$el.find(error_element);
+        var no_b = jQuery(this_error_elem).has('b').length;
+        if((no_b === 0) && ((jQuery(this_error_elem).has(error_class).length) === 0))
+        {
+            /* Situation 1: the error element (element we will attach/insert error message to)
+            has no error message, we create and add the message to the element */
+            var error_temp =  this.error_template({"error_msg": error_msg});
+            jQuery(this.$el).find('.error-msg').addClass(error_class);
+            jQuery(error_element).append(error_temp);
+        }
+        /* Situation 2: the error element (element we will attach/insert error message to)
+            has an error message, but it is not for this error */
+    },
+
+    is_empty: function (selector_string, error_element, error_class, error_msg)
     {
+        console.log("Inside BaseItemView is_empy");
+        
         var check = jQuery(this.el).find(selector_string).val();
         if(check === null || check === "") 
         {
-            if((jQuery(error_element).has('.is-empty').length) === 0)
-            {
-                jQuery(error_element).append("<b class='error-msg is-empty' style='color:red'>" + String(error_msg) + "</b>");
-            }
-           return true;
+            this.showErrorMessage(selector_string, error_element, error_class, error_msg);
+            return true;
         }
         return false;     
     },
@@ -76,6 +97,7 @@ var DocumentView = BaseItemView.extend({
    	    _.bindAll(this, 'changeDocument', 'viewDocument');
    	    this.listenTo(this.model, 'change', this.render);
         this.template = _.template(jQuery("#document-list-template").html());
+
    	},
 
    	events: {
@@ -139,6 +161,7 @@ var CourseView = BaseItemView.extend({
    	    this.listenTo(this.model, 'change', this.render);
    	    this.template = _.template(jQuery("#course-list-template").html());
    	    this.edit_form = _.template(jQuery("#course-edit-template").html());
+        this.error_template = _.template(jQuery("#error-message-template").html());
    	    /* As of now cannot think of solution for having the list
    	     * of professors available to the CourseView view and the main ControlView*/
    	},
@@ -171,17 +194,16 @@ var CourseView = BaseItemView.extend({
     validEditForm: function(attributes, options) {
         /* Extremely simple basic check. */
         var is_valid = true;
-
-        if(this.is_empty("input#edit_course_name", ".course-name-block", "Please enter a valid course name."))
+        if(this.is_empty("input#edit_course_name", ".course-name-block", ".is-empty", "Please enter a valid course name."))
         {
             is_valid = false;
         }
 
-        if(this.is_empty("input#edit_course_startingBudget", ".course-budget-block", "Please enter a valid starting budget for your course."))
+        if(this.is_empty("input#edit_course_startingBudget", ".course-budget-block", ".is-empty", "Please enter a valid starting budget for your course."))
         {
             is_valid = false;
         }
-        if(this.is_empty("textarea#edit_course_message", ".course-message-block", "Please enter a valid course message."))
+        if(this.is_empty("textarea#edit_course_message", ".course-message-block", ".is-empty", "Please enter a valid course message."))
         {
             is_valid = false;
         }
@@ -199,9 +221,7 @@ var CourseView = BaseItemView.extend({
             var startingBudget = jQuery(this.el).find("input#edit_course_startingBudget").val();
             var message = jQuery(this.el).find("textarea#edit_course_message").val();
 
-            this.model.set('name', name);
-            this.model.set('startingBudget', startingBudget);
-            this.model.set('message', message);
+            this.model.set({'name': name, 'startingBudget': startingBudget, 'message': message});
             this.model.save({
                 success: function(model, response) 
                 {},
@@ -331,7 +351,7 @@ var TeamView = DeletableItemView.extend({
         /* Extremely simple basic check. */
         var is_valid = true;
 
-        if(this.is_empty("input.edt-team-name", ".div-edt-team-name", "Please enter a team name."))
+        if(this.is_empty("input.edt-team-name", ".div-edt-team-name", ".is-empty", "Please enter a team name."))
         {
             is_valid = false;
         }
@@ -389,16 +409,16 @@ var StudentView = DeletableItemView.extend({
         /* Extremely simple basic check. */
         var is_valid = true;
 
-        if(this.is_empty("input.edt-frst-name", ".sedt-first-name", "Please enter a first name."))
+        if(this.is_empty("input.edt-frst-name", ".sedt-first-name", ".is-empty", "Please enter a first name."))
         {
             is_valid = false;
         }
 
-        if(this.is_empty("input.edt-last-name", ".sedt-last-name", "Please enter a last name."))
+        if(this.is_empty("input.edt-last-name", ".sedt-last-name", ".is-empty", "Please enter a last name."))
         {
             is_valid = false;
         }
-        if(this.is_empty("input.edt-email", ".sedt-email", "Please enter a email address."))
+        if(this.is_empty("input.edt-email", ".sedt-email", ".is-empty", "Please enter a email address."))
         {
             is_valid = false;
         }
@@ -432,6 +452,76 @@ var StudentView = DeletableItemView.extend({
       }
     }
 
+});
+
+
+var InstructorView = DeletableItemView.extend({
+
+	initialize: function(options)
+	{
+		_.bindAll(this, 'editInstructor');
+		this.template = _.template(jQuery("#instructor-list-template").html());
+		this.edit_form =  _.template(jQuery("#instructor-edit-template").html());
+        // need to bind the edit form to the model - when change made to form change model
+		this.listenTo(this.model, 'change', this.render);
+		this.listenTo(this.model, 'destroy', this.remove);
+	},
+
+   	events: {
+   		'click .ed-inst' : 'showEditForm',
+   		'click .save-edit-instructor' : 'editInstructor',
+   		'click .cncl-edit-inst' : 'hideEditForm',
+   		'click .rm-inst' : 'removeItem'
+   	},
+    
+    validEditForm: function(attributes, options) {
+        /* Extremely simple basic check. */
+        var is_valid = true;
+
+        if(this.is_empty("input.edt-frst-name", ".inst-edt-first-name", ".is-empty", "Please enter a first name."))
+        {
+            is_valid = false;
+        }
+
+        if(this.is_empty("input.edt-last-name", ".inst-edt-last-name", ".is-empty", "Please enter a last name."))
+        {
+            is_valid = false;
+        }
+        if(this.is_empty("input.edt-email", ".inst-edt-email", ".is-empty", "Please enter a email address."))
+        {
+            is_valid = false;
+        }
+
+        return is_valid;
+    },
+
+   	editInstructor: function(e)
+   	{
+        e.preventDefault();
+
+        if(this.validEditForm())
+        {
+            var inst_fname = jQuery(this.el).find("input.edt-frst-name").val();
+            var inst_lname = jQuery(this.el).find("input.edt-last-name").val();
+            var inst_email = jQuery(this.el).find("input.edt-email").val();
+            /* For some reason setting the attributes below only sets correctly if you edit
+            * email, pulling the varibles here because here they are correct and then passing.
+            * */
+            this.model.set({'first_name': inst_fname,
+                            'last_name': inst_lname,
+                            'email': inst_email});
+            this.model.save({
+	        success: function(model, response) 
+	        {},
+            error: function(model, response)
+            {
+            	alert("An error occured!");
+            },
+            wait: true
+          });//end save
+      }
+    }
+    
 });
 
 

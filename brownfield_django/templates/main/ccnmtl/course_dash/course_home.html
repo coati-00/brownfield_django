@@ -10,99 +10,7 @@
 {% endblock %}
 
 {% block js %}
-
-    {% comment %}List Templates{% endcomment %}
-    <script type="text/template" id="document-list-template">
-        <div class="document-click"><b><%= name %></b></div>
-        <%
-            if(visible)
-            {
-                %><button class="btn btn-xs btn-danger chng-dct pull-right">Hide</button><%
-            }else
-            {
-                %><button class="btn btn-xs btn-success chng-dct pull-right">Show</button><%
-            }
-        %>
-    </script>
-
-    <script type="text/template" id="student-list-template">
-     <div class="student-info">
-        <div class="student-name">
-            <label>Name: </label>
-            <%= first_name %>
-            <%= last_name %>
-        </div>
-        <div class="student-email">
-            <label>Email: </label>
-            <%= email %>
-        </div>
-        </div>
-        <div class="student-buttons">
-            
-            <button class="btn btn-xs btn-default pull-right rm-st"><span class="glyphicon glyphicon-remove"></span> Remove Student From Course </button>
-            <button class="btn btn-xs btn-default pull-right ed-st"><span class="glyphicon glyphicon-pencil"></span> Edit Student </button>
-        </div>
-    </script>
-
-    <script type="text/template" id="team-list-template">
-       <div class="team-name-list">
-            <div class="t-username">
-            <label>Team Username (for login purposes): </label> <%= username %>
-            </div>
-            <div class="t-name">
-            <label>Team Name: </label> <%= first_name %>
-            </div>
-            <div class="t-history">           
-            <button class="btn btn-xs btn-default hist-team"><span class="glyphicon glyphicon-save"></span> Download Team History (CSV) </button>
-            </span>
-        </div>
-    </div>
-        <div class="team-buttons">
-           <button class="btn btn-xs btn-default pull-right rm-team"><span class="glyphicon glyphicon-remove"></span> Remove Team From Course </button>
-            <button class="btn btn-xs btn-default pull-right edit-team"><span class="glyphicon glyphicon-pencil"></span> Edit Team </button>
-        </div>
-    </script>
-    
-
-    {% comment %}Edit Templates{% endcomment %}
-    <script type="text/template" id="student-edit-template">
-    <form class="edit-student-frm" method="" action="" style="display: inline;">
-        {% csrf_token %}
-     <div class="create-student-account">
-        <div class="sedt-first-name">
-            <label>First Name: </label>
-            <input type="text" placeholder="First Name: " class="edt-frst-name" value="<%= first_name %>" /> 
-        </div>
-        <div class="sedt-last-name">
-            <label>Last Name: </label>
-            <input type="text" placeholder="Last Name: " class="edt-last-name" value="<%= last_name %>" /> 
-        </div>
-        <div class="sedt-email">
-            <label>Email: </label>
-            <input type="text" placeholder="Email: " class="edt-email" value="<%= email %>" />
-        </div>
-        </div>
-        <div class="create-student-buttons">
-        <button class="btn btn-xs btn-default save-edit-student"> Save Changes </button>  
-        <button class="btn btn-xs  btn-default cncl-edit-std">Cancel</button>       
-        </div>
-    </form>
-    </script>
-    
-    <script type="text/template" id="team-edit-template">
-    <br />
-    <form class="edit-team-frm" method="" action="" style="display: inline;">
-        {% csrf_token %}
-        <div class="div-edt-team-name">
-            <label>Team Name: </label>
-            <input type="text" placeholder="Team Name" class="edt-team-name" value="<%= first_name %>" />
-        </div>
-        <button class="btn btn-xs btn-default save-edit-team"> Save Changes </button>
-        <button class="btn btn-xs  btn-default cncl-edit-team">Cancel</button>
-        <br />
-    </form>
-    </script>
-    
+    {% include "main/ccnmtl/course_dash/course_templates.html" %}
     <script type="text/javascript">
         jQuery(document).ready(function () {
             var crs_id = jQuery("input[name='crs-id']").val();
@@ -118,7 +26,7 @@
                     },
                     error: function(data) 
                     {
-                    	alert('Something went wrong, please try again');
+                        alert('Something went wrong, please try again');
                     }
                 });// end ajax
             });//end onclick

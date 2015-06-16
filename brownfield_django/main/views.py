@@ -1,5 +1,6 @@
 import csv
 import json
+import os
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -12,6 +13,7 @@ from django.template import loader
 from django.template.context import Context
 from django.views.generic import View
 from django.views.generic.detail import DetailView
+
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 
@@ -19,7 +21,7 @@ from brownfield_django.main.models import Course, UserProfile, Document, \
     Team, History, Information, PerformedTest
 from brownfield_django.main.serializers import DocumentSerializer, \
     UserSerializer, TeamUserSerializer, CourseSerializer, \
-    StudentUserSerializer, StudentMUserSerializer
+    StudentUserSerializer, StudentMUserSerializer, InstructorSerializer
 from brownfield_django.main.xml_strings import INITIAL_XML
 from brownfield_django.mixins import LoggedInMixin, JSONResponseMixin, \
     CSRFExemptMixin, PasswordMixin, UniqUsernameMixin
@@ -161,8 +163,9 @@ class InstructorViewSet(UniqUsernameMixin,
                         PasswordMixin, viewsets.ModelViewSet):
     '''This could probably be combined with StudentViewSet
     not sure though.'''
-    queryset = User.objects.filter(profile__profile_type='TE')
-    serializer_class = StudentUserSerializer
+    queryset = User.objects.filter(
+        profile__profile_type='TE').filter(profile__archive=False)
+    serializer_class = InstructorSerializer
 
     def send_instructor_email(self, instructor, profile):
         '''Send instructor their credentials'''
@@ -206,7 +209,6 @@ class InstructorViewSet(UniqUsernameMixin,
                 serializer = StudentMUserSerializer(instructor)
                 return Response(serializer.data, status.HTTP_201_CREATED)
             except:
-                # is it considered good practice to return serializer.data
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
@@ -217,17 +219,15 @@ class InstructorViewSet(UniqUsernameMixin,
             return Response(status=status.HTTP_403_FORBIDDEN)
         elif up.is_admin():
             instructor = get_object_or_404(User, pk=pk)
-            try:
-                # should I be sticking this in StudentMUserSerializer
-                instructor.first_name = request.DATA['first_name']
-                instructor.last_name = request.DATA['last_name']
-                instructor.email = request.DATA['email']
-                instructor.save()
-                serializer = StudentMUserSerializer(instructor)
-                return Response(serializer.data, status.HTTP_200_OK)
-            except:
-                '''For some reason update failed'''
-                return Response({"success": False})
+            serializer = InstructorSerializer(
+                instructor, data=request.DATA, partial=True)
+            if serializer.is_valid():
+                try:
+                    serializer.save()
+                    return Response(serializer.data, status.HTTP_200_OK)
+                except:
+                    '''For some reason update failed'''
+                    return Response({"success": False})
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
@@ -235,7 +235,8 @@ class InstructorViewSet(UniqUsernameMixin,
         up = self.request.user.profile
         queryset = User.objects.none()
         if up.is_admin():
-            instructors = UserProfile.objects.filter(profile_type='TE')
+            instructors = UserProfile.objects.filter(
+                profile_type='TE').filter(archive=False)
             queryset = User.objects.filter(profile__in=instructors)
         return queryset
 
@@ -623,7 +624,7 @@ class TeamCSV(View):
 
         columns = ['Cost', 'Date', 'Description', 'X', 'Y', 'Z']
 
-        response = HttpResponse(mimetype='text/csv')
+        response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=' + \
             str(user.username) + '_' + 'team.course' + '.csv'
         writer = csv.writer(response, dialect='excel')
@@ -642,4 +643,20 @@ class TeamCSV(View):
                 columns = [test.history.cost, test.history.date,
                            test.history.description, test.x, test.y, 'None']
             writer.writerow(columns)
+        return response
+
+
+class ReRouteReqs(View):
+    '''Currently the Flash behind the interactive's buttons for download is
+    hard coded to look at
+    http://brownfield.ccnmtl.columbia.edu/static/flash/documents'''
+
+    def get(self, request, path):
+        comp_path = os.path.join(os.path.dirname(__file__),
+                                 "../../media/flash/documents/") + str(path)
+        readpath = open(comp_path, 'rb')
+        response = HttpResponse(content=readpath.read())
+        response['Content-Type'] = 'application/pdf'
+        response['Content-Disposition'] = 'attachment; filename=%s' \
+            % path
         return response

@@ -34,7 +34,7 @@ if 'test' in sys.argv or 'jenkins' in sys.argv:
     }
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-SOUTH_TESTS_MIGRATE = False
+# SOUTH_TESTS_MIGRATE = False
 
 NOSE_ARGS = [
     '--with-coverage',
@@ -42,8 +42,6 @@ NOSE_ARGS = [
 ]
 
 JENKINS_TASKS = (
-    'django_jenkins.tasks.run_pylint',
-    'django_jenkins.tasks.with_coverage',
     'django_jenkins.tasks.run_pep8',
     'django_jenkins.tasks.run_pyflakes',
 )
@@ -58,8 +56,8 @@ TIME_ZONE = 'America/New_York'
 LANGUAGE_CODE = 'en-us'
 SITE_ID = 1
 USE_I18N = False
-MEDIA_ROOT = "/var/www/brownfield_django/uploads/"
-MEDIA_URL = '/uploads/'
+MEDIA_ROOT = "/var/www/brownfield_django/brownfield_django/brownfield_django/main/static/"
+MEDIA_URL = '/static/flash/documents/'
 STATIC_URL = '/media/'
 SECRET_KEY = 'there-has-to-be-one-of-these-in-here'
 
@@ -115,7 +113,6 @@ INSTALLED_APPS = [
     'rest_framework',
     # 'casper',
     'typogrify',
-    'south',
     'django_nose',
     'compressor',
     'django_statsd',

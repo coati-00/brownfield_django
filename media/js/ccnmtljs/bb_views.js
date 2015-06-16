@@ -59,7 +59,22 @@ var BaseItemView = Backbone.View.extend({
             return true;
         }
         return false;     
-     }
+    },
+    
+    confirmArchival: function (evt)
+    {
+    	var current = jQuery(this.el);
+    	current.find('.conf-del').show();
+    	current.find('.conf-del').css({'display':'inline', 'color':'red', 'font-weight':'bold'});
+    	current.find('.reg-btn').hide();
+    },
+    
+    cancelArchive: function (evt)
+    {
+    	var current = jQuery(this.el);
+    	current.find('.reg-btn').show();
+    	current.find('.conf-del').hide();
+    }
 
 });
 
@@ -127,9 +142,13 @@ var DocumentView = BaseItemView.extend({
    		{
    			document.location = "http://brownfieldref.ccnmtl.columbia.edu/";
    		}
+   		else if((this.model.get('name') === "Video: Press Conference Proceedings in Moraine Township") || (this.model.get('name') === "Video: Esker County Community Television: O'Ryan's Express"))
+   		{
+   			window.open("../../media/" + this.model.get('link'));
+   		}
    		else
 		{
-    		window.open("../../media/" + this.model.get('link'));
+    		window.open("../../media/flash/" + this.model.get('link'));
 		}
    	}
 
@@ -151,7 +170,10 @@ var CourseView = BaseItemView.extend({
    	    'click .course_name' : 'courseDetails',
    	    'click .edit-crs' : 'showEditForm',
    	    'click .save-edit-course' : 'editCourse',
-   	    'click .cncl-edit-crs' : 'hideEditForm'
+   	    'click .cncl-edit-crs' : 'hideEditForm',
+   	    'click .conf-archive-course' : 'confirmArchival',
+   	    'click .cancel-arch' : 'cancelArchive',
+   	    'click .conf-arch' : 'clear'
    	},
     	
     render: function ()
@@ -217,6 +239,95 @@ var CourseView = BaseItemView.extend({
         window.location.href = '/course_details/' + this.model.get('id')  + '/';  
     }
 });// End CourseView
+
+
+var InstructorView = BaseItemView.extend({
+
+	initialize: function(options)
+	{
+		_.bindAll(this, 'editInstructor');
+		this.template = _.template(jQuery("#instructor-list-template").html());
+		this.edit_form =  _.template(jQuery("#instructor-edit-template").html());
+        // need to bind the edit form to the model - when change made to form change model
+		this.listenTo(this.model, 'change', this.render);
+	},
+
+   	events: {
+   		'click .ed-inst' : 'showEditForm',
+   		'click .save-edit-instructor' : 'editInstructor',
+   		'click .cncl-edit-inst' : 'hideEditForm',
+   		'click .conf-archive-inst' : 'confirmArchival',
+   	    'click .cancel-arch-inst' : 'cancelArchive',
+   	    'click .conf-arch' : 'clear'
+   	},
+    
+    render: function ()
+    {
+    	var prof = this.model.get('profile');
+        if (prof.archive === true) {
+            this.$el.remove();
+        } else {
+        	BaseItemView.prototype.render.apply(this, arguments);
+        }
+        return this;
+    },
+        	
+    validEditForm: function(attributes, options) {
+        /* Extremely simple basic check. */
+        var is_valid = true;
+
+        if(this.is_empty("input.edt-frst-name", ".inst-edt-first-name", "Please enter a first name."))
+        {
+            is_valid = false;
+        }
+        if(this.is_empty("input.edt-last-name", ".inst-edt-last-name", "Please enter a last name."))
+        {
+            is_valid = false;
+        }
+        if(this.is_empty("input.edt-email", ".inst-edt-email", "Please enter a email address."))
+        {
+            is_valid = false;
+        }
+
+        return is_valid;
+    },
+
+   	editInstructor: function(e)
+   	{
+        e.preventDefault();
+
+        if(this.validEditForm())
+        {
+        	var current = jQuery(this.el);
+            var inst_fname = current.find("input.edt-frst-name").val();
+            var inst_lname = current.find("input.edt-last-name").val();
+            var inst_email = current.find("input.edt-email").val();
+            /* For some reason setting the attributes below only sets correctly if you edit
+            * email, pulling the varibles here because here they are correct and then passing.
+            * */
+            this.model.set('first_name', inst_fname);
+            this.model.set('last_name', inst_lname);
+            this.model.set('email', inst_email);
+            this.model.save({
+	        success: function(model, response) 
+	        {},
+            error: function(model, response)
+            {
+            	alert("An error occured!");
+            },
+            wait: true
+          });//end save
+      }
+    },
+    
+    clear: function() {
+    	var prof = _.clone(this.model.get('profile'));
+    	prof.archive = true;
+    	this.model.set("profile", prof);
+        this.model.save();
+    }
+    
+});
 
 
 var TeamView = DeletableItemView.extend({

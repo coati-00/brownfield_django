@@ -8,84 +8,7 @@
 {% endblock %}
 
 {% block js %}
-    <script type="text/template" id="error-message-template">
-      <b class="error-msg"><%= error_msg %></b>
-    </script>
-
-    <script type="text/template" id="course-list-template">
-        <div class="course-name-inside">
-        <button class="btn btn-default course_name"><span class="glyphicon glyphicon-th-list"></span> <strong><%= name %></strong> Details</button>
-        </div>
-        <button class='btn btn-xs btn-default edit-crs pull-right'><span class="glyphicon glyphicon-pencil"></span> Edit Course </button>
-    </script>
-
-    <script type="text/template" id="course-edit-template">
-        <form id="create-edit-form" method="" action="">
-            <span class="course-name-block">
-                <label for="edit_course_name">Name:</label>
-                <input id="edit_course_name" maxlength="255" name="name" type="text" value="<%= name %>"/><br />
-            </span>
-            <span class="course-budget-block">
-		        <label for="edit_course_startingBudget">StartingBudget:</label> 
-			    <input id="edit_course_startingBudget" min="0" name="startingBudget" type="number" value=<%= startingBudget %> /><br />
-            </span>
-            <span class="course-message-block">
-			    <label for="edit_course_message">Message:</label> 
-			    <textarea form="create-edit-form" cols="80" id="edit_course_message" name="edit_message" rows="10"><%= message %></textarea><br />
-			</span>
-            {% comment %}
-            <span class="course-professor-block">
-			{% if request.user.profile.is_admin %}
-				<label for="edit_professor">Professor:</label>
-				<select id="edit_professor" name="professor">
-               	</select><br />
-            {% endif %}
-            </span>
-            {% endcomment %}
-        <button class='btn btn-default btn-xs save-edit-course' type="button">
-            Save
-        </button>
-        <button class='btn btn-default btn-xs cncl-edit-crs' type="button">
-            Cancel
-        </button>
-        </form>
-        <br />
-    </script>
-    
-    {% if request.user.profile.is_admin %}
-    <script type="text/template" id="instructor-list-template">
-        <div class="instructor-list-inside">
-        <span class="instructor"><label for="instructor">Instructor:</label>&nbsp;<%= first_name %> <%= last_name %></span>
-        <span class="email"><label for="email">Email:</label>&nbsp;<%= email %></span>
-        </div>
-                <button class='btn btn-default btn-xs pull-right rm-inst'> Remove Instructor </button>
-                <button class='btn btn-default btn-xs pull-right ed-inst'> Edit Instructor </button>
-
-    </script>
-
-
-    <script type="text/template" id="instructor-edit-template">
-    <form class="edit-instructor-frm" method="" action="" style="display: inline;">
-        {% csrf_token %}
-        <span class="inst-edt-first-name">
-            <label>First Name: </label>
-            <input type="text" placeholder="First Name: " class="edt-frst-name" value="<%= first_name %>" />     
-        </span>
-        <span class="inst-edt-last-name">
-            <label>Last Name: </label>
-            <input type="text" placeholder="Last Name: " class="edt-last-name" value="<%= last_name %>" /> 
-        </span>
-        <span class="inst-edt-email">
-            <label>Email: </label>
-            <input type="text" placeholder="Email: " class="edt-email" value="<%= email %>" />
-        </span>
-        <button class='btn btn-xs btn-default pull-right cncl-edit-inst'> Cancel </button>
-        <button class='btn btn-default btn-xs pull-right save-edit-instructor'> Save Changes </button>
-    </form>
-    </script>
-    {% endif %}
-
-
+    {% include "main/ccnmtl/home_dash/dashboard_templates.html" %}
     <script type="text/javascript">
         jQuery(document).ready(function () {
             var control_view = new ManageCoursesView({
@@ -115,4 +38,5 @@
     {% include "main/ccnmtl/home_dash/demo_tab.html" %}
   </div>
   {% comment %}{% endcomment %}
+
 {% endblock %}

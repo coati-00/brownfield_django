@@ -67,8 +67,6 @@ class TeamMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
         fields = ('signed_contract', 'budget', 'students', 'course')
-<<<<<<< HEAD
-=======
 
 
 class InstructorProfileSerializer(serializers.ModelSerializer):
@@ -107,4 +105,3 @@ class InstructorSerializer(serializers.ModelSerializer):
             'last_name', instance.last_name)
         instance.save()
         return instance
->>>>>>> 7d577a89a29126e4d17744d63dfdcae4ae2b2b4c
